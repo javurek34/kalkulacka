@@ -3,83 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Investiční kalkulačka s inflací</title>
+    <title>Investiční kalkulačka - Měsíční úročení</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { opacity: 1; }
-    </style>
 </head>
-<body class="bg-gray-50 font-sans p-4 md:p-8">
+<body class="bg-slate-100 font-sans p-4">
 
-    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div class="bg-indigo-700 p-6">
-            <h1 class="text-2xl md:text-3xl font-bold text-white text-center">Pokročilá investiční kalkulačka</h1>
-            <p class="text-indigo-100 text-center mt-2">Složené úročení, inflace a dynamické vklady</p>
+    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
+        <div class="bg-gradient-to-r from-blue-800 to-indigo-900 p-8">
+            <h1 class="text-3xl font-extrabold text-white">Profi Investiční Model</h1>
+            <p class="text-blue-200">Detailní simulace složeného úročení s vlivem inflace</p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-0">
-            <div class="p-6 bg-gray-50 border-r border-gray-200">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700">Počáteční investice (Kč)</label>
-                        <input type="number" id="initial" value="100000" class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700">Měsíční příspěvek (Kč)</label>
-                        <input type="number" id="monthly" value="5000" class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700">Roční úrok (%)</label>
-                        <input type="number" id="rate" value="7" step="0.1" class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700">Investiční horizont (let)</label>
-                        <input type="number" id="years" value="20" class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700">Roční míra inflace (%)</label>
-                        <input type="number" id="inflation" value="3" step="0.1" class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-
-                    <hr class="my-4">
-                    <h3 class="font-bold text-indigo-700 text-sm uppercase">Dynamika vkladů</h3>
-                    
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 text-nowrap">Zvýšit vklad každých (let)</label>
-                            <input type="number" id="increaseYears" value="5" class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600">O kolik procent (%)</label>
-                            <input type="number" id="increasePercent" value="10" class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-                    </div>
-
-                    <button onclick="updateChart()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition duration-200 mt-4">
-                        Přepočítat
-                    </button>
+        <div class="grid grid-cols-1 lg:grid-cols-3">
+            <div class="p-8 bg-slate-50 space-y-5 border-r border-slate-200">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700">Počáteční kapitál (Kč)</label>
+                    <input type="number" id="initial" value="100000" class="w-full mt-1 p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
                 </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700">Pravidelný měsíční vklad (Kč)</label>
+                    <input type="number" id="monthly" value="5000" class="w-full mt-1 p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700">Roční úrok (%)</label>
+                        <input type="number" id="rate" value="8" step="0.1" class="w-full mt-1 p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700">Připisování úroku</label>
+                        <select id="compounding" class="w-full mt-1 p-3 border rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="12">Měsíčně</option>
+                            <option value="1">Ročně</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700">Doba investice (roky)</label>
+                    <input type="number" id="years" value="25" class="w-full mt-1 p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700">Očekávaná inflace (% p.a.)</label>
+                    <input type="number" id="inflation" value="3" step="0.1" class="w-full mt-1 p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div class="p-4 bg-blue-100 rounded-xl space-y-3">
+                    <p class="text-xs font-black text-blue-800 uppercase tracking-wider text-center">Dynamické navyšování vkladů</p>
+                    <div class="flex gap-2 items-end">
+                        <div class="flex-1">
+                            <span class="text-[10px] font-bold text-blue-700">Každých (let)</span>
+                            <input type="number" id="increaseYears" value="3" class="w-full p-2 border rounded-lg outline-none">
+                        </div>
+                        <div class="flex-1">
+                            <span class="text-[10px] font-bold text-blue-700">Zvýšit o (%)</span>
+                            <input type="number" id="increasePercent" value="15" class="w-full p-2 border rounded-lg outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="updateChart()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg transition transform active:scale-95">
+                    AKTUALIZOVAT VÝPOČET
+                </button>
             </div>
 
-            <div class="lg:col-span-2 p-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                        <p class="text-xs text-indigo-600 font-bold uppercase">Nominální hodnota</p>
-                        <p id="resNominal" class="text-xl font-bold text-gray-800">0 Kč</p>
+            <div class="lg:col-span-2 p-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div class="p-5 border-b-4 border-blue-500 bg-white shadow-sm rounded-lg">
+                        <span class="text-xs font-bold text-slate-400 uppercase">Konečná suma (nom.)</span>
+                        <div id="resNominal" class="text-2xl font-black text-slate-800">0 Kč</div>
                     </div>
-                    <div class="bg-green-50 p-4 rounded-xl border border-green-100">
-                        <p class="text-xs text-green-600 font-bold uppercase">Celkem investováno</p>
-                        <p id="resInvested" class="text-xl font-bold text-gray-800">0 Kč</p>
+                    <div class="p-5 border-b-4 border-green-500 bg-white shadow-sm rounded-lg">
+                        <span class="text-xs font-bold text-slate-400 uppercase">Celkem jsi vložil</span>
+                        <div id="resInvested" class="text-2xl font-black text-slate-800">0 Kč</div>
                     </div>
-                    <div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
-                        <p class="text-xs text-orange-600 font-bold uppercase">Reálná hodnota (dnes)</p>
-                        <p id="resReal" class="text-xl font-bold text-gray-800">0 Kč</p>
+                    <div class="p-5 border-b-4 border-orange-500 bg-white shadow-sm rounded-lg">
+                        <span class="text-xs font-bold text-slate-400 uppercase">Dnešní hodnota (reál.)</span>
+                        <div id="resReal" class="text-2xl font-black text-slate-800">0 Kč</div>
                     </div>
                 </div>
 
-                <div class="relative h-[300px] md:h-[400px]">
+                <div class="h-[450px]">
                     <canvas id="myChart"></canvas>
                 </div>
             </div>
@@ -94,13 +100,14 @@
         }
 
         function updateChart() {
-            const initial = parseFloat(document.getElementById('initial').value);
-            const monthly = parseFloat(document.getElementById('monthly').value);
-            const rate = parseFloat(document.getElementById('rate').value) / 100;
-            const years = parseInt(document.getElementById('years').value);
+            const initial = parseFloat(document.getElementById('initial').value) || 0;
+            const monthly = parseFloat(document.getElementById('monthly').value) || 0;
+            const annualRate = parseFloat(document.getElementById('rate').value) / 100;
+            const compoundingFrequency = parseInt(document.getElementById('compounding').value);
+            const years = parseInt(document.getElementById('years').value) || 0;
             const inflation = parseFloat(document.getElementById('inflation').value) / 100;
-            const increaseYears = parseInt(document.getElementById('increaseYears').value);
-            const increasePercent = parseFloat(document.getElementById('increasePercent').value) / 100;
+            const incYears = parseInt(document.getElementById('increaseYears').value) || 1;
+            const incPercent = parseFloat(document.getElementById('increasePercent').value) / 100;
 
             let labels = [];
             let nominalData = [];
@@ -111,41 +118,48 @@
             let currentMonthly = monthly;
             let totalInvested = initial;
 
+            // Výpočet po měsících pro maximální přesnost
             for (let y = 0; y <= years; y++) {
                 labels.push("Rok " + y);
                 
-                // Hodnota po očištění o inflaci (reálná kupní síla)
+                // Přepočet na reálnou hodnotu (deflace nominální částky zpět k dnešku)
                 let realValue = balance / Math.pow(1 + inflation, y);
                 
                 nominalData.push(Math.round(balance));
                 realData.push(Math.round(realValue));
                 investedData.push(Math.round(totalInvested));
 
-                // Výpočet pro další rok (12 měsíců iterace)
                 if (y < years) {
                     for (let m = 1; m <= 12; m++) {
-                        balance *= (1 + (rate / 12));
+                        // Měsíční úročení vs Roční úročení
+                        // Pokud je měsíční, úročíme každý měsíc sazbou r/12
+                        if (compoundingFrequency === 12) {
+                            balance *= (1 + (annualRate / 12));
+                        }
+                        
                         balance += currentMonthly;
                         totalInvested += currentMonthly;
                     }
-                    // Zvýšení příspěvku po X letech
-                    if ((y + 1) % increaseYears === 0) {
-                        currentMonthly *= (1 + increasePercent);
+                    
+                    // Pokud je roční připisování, úročí se celá suma jednou na konci roku
+                    if (compoundingFrequency === 1) {
+                        balance *= (1 + annualRate);
+                    }
+
+                    // Dynamické zvýšení vkladu
+                    if ((y + 1) % incYears === 0) {
+                        currentMonthly *= (1 + incPercent);
                     }
                 }
             }
 
-            // Aktualizace textových polí
+            // UI Update
             document.getElementById('resNominal').innerText = formatCZK(balance);
             document.getElementById('resInvested').innerText = formatCZK(totalInvested);
             document.getElementById('resReal').innerText = formatCZK(balance / Math.pow(1 + inflation, years));
 
-            // Graf
             const ctx = document.getElementById('myChart').getContext('2d');
-            
-            if (myChart) {
-                myChart.destroy();
-            }
+            if (myChart) myChart.destroy();
 
             myChart = new Chart(ctx, {
                 type: 'line',
@@ -155,54 +169,43 @@
                         {
                             label: 'Nominální hodnota',
                             data: nominalData,
-                            borderColor: '#4f46e5',
-                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             fill: true,
-                            tension: 0.3
-                        },
-                        {
-                            label: 'Reálná hodnota (očist. o inflaci)',
-                            data: realData,
-                            borderColor: '#f97316',
-                            borderDash: [5, 5],
-                            fill: false,
-                            tension: 0.3
+                            pointRadius: 4
                         },
                         {
                             label: 'Vložený kapitál',
                             data: investedData,
                             borderColor: '#22c55e',
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                            fill: true,
-                            tension: 0.3
+                            borderWidth: 2,
+                            fill: false
+                        },
+                        {
+                            label: 'Reálná hodnota (dnešní kupní síla)',
+                            data: realData,
+                            borderColor: '#f97316',
+                            borderDash: [6, 4],
+                            fill: false
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: { ticks: { callback: value => formatCZK(value) } }
+                    },
                     plugins: {
                         tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ' + formatCZK(context.raw);
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) { return formatCZK(value); }
-                            }
+                            callbacks: { label: context => context.dataset.label + ': ' + formatCZK(context.raw) }
                         }
                     }
                 }
             });
         }
 
-        // Inicializační výpočet při načtení
         window.onload = updateChart;
     </script>
 </body>
