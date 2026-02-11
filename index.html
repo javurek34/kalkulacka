@@ -3,334 +3,384 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profi Investiční Kalkulačka v2.0</title>
+    <title>Investiční Master 2026 | Kalkulačka & Portfolio</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
     <style>
         :root {
             --primary: #2563eb;
+            --primary-dark: #1d4ed8;
             --secondary: #64748b;
             --success: #059669;
-            --bg: #f1f5f9;
+            --danger: #ef4444;
+            --bg: #f8fafc;
             --card: #ffffff;
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg);
             color: #0f172a;
             margin: 0;
-            padding: 10px;
-            line-height: 1.5;
+            padding: 0;
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
         }
 
-        .header {
-            text-align: center;
-            padding: 20px 0;
+        /* Navigace */
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: var(--card);
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* Responzivní Grid */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 20px;
+        .nav a {
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: var(--secondary);
+            transition: all 0.3s;
+            text-decoration: none;
         }
 
-        @media (max-width: 900px) {
-            .main-grid { grid-template-columns: 1fr; }
+        .nav a.active {
+            background: var(--primary);
+            color: white;
         }
+
+        /* Společné prvky */
+        .page { display: none; animation: fadeIn 0.4s ease; }
+        .page.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .card {
             background: var(--card);
             padding: 24px;
             border-radius: 16px;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
 
-        .input-group { margin-bottom: 16px; }
-        
-        label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--secondary);
-        }
+        .grid-2 { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
 
+        h1, h2 { margin-top: 0; color: #1e293b; }
+
+        /* Formuláře */
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px; color: var(--secondary); }
         input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
+            width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; box-sizing: border-box;
         }
 
-        input:focus { border-color: var(--primary); outline: none; }
-
-        /* Step-up sekce */
-        .step-up-container {
-            background: #f8fafc;
-            border: 1px dashed #cbd5e1;
-            padding: 15px;
-            border-radius: 12px;
-            margin: 20px 0;
-        }
-
-        .step-up-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        .step-up-box {
+            background: #eff6ff; border: 1px dashed var(--primary); padding: 15px; border-radius: 12px; margin: 15px 0;
         }
 
         /* Výsledky */
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-item { background: #f1f5f9; padding: 15px; border-radius: 12px; border-bottom: 4px solid var(--primary); }
+        .stat-item.green { border-bottom-color: var(--success); }
+        .stat-item h4 { margin: 0; font-size: 0.75rem; text-transform: uppercase; color: var(--secondary); }
+        .stat-item p { margin: 8px 0 0; font-size: 1.25rem; font-weight: 800; }
+
+        /* Tlačítka */
+        .btn {
+            width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s;
         }
-
-        .stat-box {
-            padding: 20px;
-            border-radius: 12px;
-            background: #f8fafc;
-            border-left: 4px solid var(--primary);
-        }
-
-        .stat-box.success { border-left-color: var(--success); }
-        .stat-box h3 { margin: 0; font-size: 0.8rem; text-transform: uppercase; color: var(--secondary); }
-        .stat-box p { margin: 10px 0 0; font-size: 1.5rem; font-weight: 800; }
-
-        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-
-        button {
-            flex: 1;
-            padding: 14px;
-            border-radius: 8px;
-            border: none;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
-        }
-
-        .btn-calc { background: var(--primary); color: white; }
+        .btn-primary { background: var(--primary); color: white; margin-bottom: 10px; }
         .btn-pdf { background: #0f172a; color: white; }
-        button:active { transform: scale(0.98); }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        .chart-wrapper { height: 400px; margin-top: 20px; }
+        /* Tabulky */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f8fafc; color: var(--secondary); font-size: 0.8rem; }
+        .del-btn { color: var(--danger); cursor: pointer; font-weight: bold; }
+
+        .chart-container { height: 400px; position: relative; }
     </style>
 </head>
 <body>
 
-<div class="container" id="calculator-content">
-    <div class="header">
-        <h1>Investiční Master 📈</h1>
+<div class="container" id="main-content">
+    <nav class="nav no-print">
+        <a onclick="showPage('calc')" id="link-calc" class="active">Kalkulačka</a>
+        <a onclick="showPage('portfolio')" id="link-portfolio">Moje Portfolio</a>
+        <a onclick="showPage('history')" id="link-history">Historie trhů</a>
+    </nav>
+
+    <div id="page-calc" class="page active">
+        <div class="grid-2">
+            <div class="card no-print">
+                <h2>Nastavení</h2>
+                <div class="input-group">
+                    <label>Měna</label>
+                    <select id="currency" onchange="calculate()">
+                        <option value="Kč">CZK (Kč)</option>
+                        <option value="€">EUR (€)</option>
+                        <option value="$">USD ($)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Počáteční vklad</label>
+                    <input type="number" id="initialDeposit" value="100000">
+                </div>
+                <div class="input-group">
+                    <label>Měsíční příspěvek</label>
+                    <input type="number" id="monthlyStep" value="5000">
+                </div>
+                
+                <div class="step-up-box">
+                    <label style="color:var(--primary)">Pravidelné navyšování (Step-up)</label>
+                    <div style="display:flex; gap:10px;">
+                        <div><small>Každých (let)</small><input type="number" id="incYears" value="5"></div>
+                        <div><small>Zvýšit o (měsíčně)</small><input type="number" id="incAmount" value="2000"></div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Doba (let)</label>
+                    <input type="number" id="years" value="25">
+                </div>
+                <div class="input-group">
+                    <label>Úrok (% p.a.)</label>
+                    <input type="number" id="rate" value="8" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Inflace (% p.a.)</label>
+                    <input type="number" id="inflation" value="3" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Frekvence úročení</label>
+                    <select id="compounding">
+                        <option value="12">Měsíčně</option>
+                        <option value="4">Kvartálně</option>
+                        <option value="1" selected>Ročně</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="calculate()">Vypočítat</button>
+                <button class="btn btn-pdf" onclick="exportPDF()">Export do PDF</button>
+            </div>
+
+            <div class="card" id="pdf-area">
+                <div class="stats">
+                    <div class="stat-item">
+                        <h4>Naspořená částka</h4>
+                        <p id="resTotal">0</p>
+                    </div>
+                    <div class="stat-item">
+                        <h4>Celkové vklady</h4>
+                        <p id="resDeposits">0</p>
+                    </div>
+                    <div class="stat-item green">
+                        <h4>Reálná hodnota (dnes)</h4>
+                        <p id="resReal">0</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="main-grid">
-        <div class="card no-pdf">
+    <div id="page-portfolio" class="page card">
+        <h2>Evidence reálných nákupů</h2>
+        <p>Sledujte své průměrné nákupní ceny. Data jsou uložena ve vašem prohlížeči.</p>
+        <div class="grid-2" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
             <div class="input-group">
-                <label>Měna</label>
-                <select id="currency" onchange="calculate()">
-                    <option value="Kč">CZK (Kč)</option>
-                    <option value="€">EUR (€)</option>
-                    <option value="$">USD ($)</option>
-                </select>
+                <label>Ticker / Název</label>
+                <input type="text" id="pTicker" placeholder="např. VWCE nebo ČEZ">
             </div>
-
             <div class="input-group">
-                <label>Počáteční kapitál</label>
-                <input type="number" id="initialDeposit" value="100000">
+                <label>Počet kusů</label>
+                <input type="number" id="pShares" step="0.001">
             </div>
-
             <div class="input-group">
-                <label>Měsíční úložka</label>
-                <input type="number" id="monthlyStep" value="5000">
+                <label>Nákupní cena (za kus)</label>
+                <input type="number" id="pPrice">
             </div>
-
-            <div class="step-up-container">
-                <label style="color: var(--primary)">Navýšení vkladů (Step-up)</label>
-                <div class="step-up-inputs">
-                    <div>
-                        <small>Každých (let):</small>
-                        <input type="number" id="increaseYears" value="5">
-                    </div>
-                    <div>
-                        <small>Zvýšit o (částka):</small>
-                        <input type="number" id="increaseAmount" value="2000">
-                    </div>
-                </div>
-            </div>
-
             <div class="input-group">
-                <label>Doba investice (roky)</label>
-                <input type="number" id="years" value="25">
-            </div>
-
-            <div class="input-group">
-                <label>Očekávaný výnos (% p.a.)</label>
-                <input type="number" id="interestRate" value="8" step="0.1">
-            </div>
-
-            <div class="input-group">
-                <label>Očekávaná inflace (% p.a.)</label>
-                <input type="number" id="inflation" value="3" step="0.1">
-            </div>
-
-            <div class="input-group">
-                <label>Frekvence připisování úroků</label>
-                <select id="compounding">
-                    <option value="12">Měsíčně</option>
-                    <option value="4">Kvartálně</option>
-                    <option value="1" selected>Ročně</option>
-                </select>
-            </div>
-
-            <div class="btn-group">
-                <button class="btn-calc" onclick="calculate()">Vypočítat</button>
-                <button class="btn-pdf" onclick="exportToPDF()">Export PDF</button>
+                <label>&nbsp;</label>
+                <button class="btn btn-primary" onclick="addAsset()">Přidat do portfolia</button>
             </div>
         </div>
 
-        <div class="card">
-            <div class="results-grid">
-                <div class="stat-box">
-                    <h3>Nominální hodnota</h3>
-                    <p id="resTotal">0</p>
-                </div>
-                <div class="stat-box">
-                    <h3>Celkem vloženo</h3>
-                    <p id="resDeposits">0</p>
-                </div>
-                <div class="stat-box success">
-                    <h3>Reálná hodnota (dnes)</h3>
-                    <p id="resReal">0</p>
-                </div>
-            </div>
-
-            <div class="chart-wrapper">
-                <canvas id="myChart"></canvas>
-            </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Asset / Ticker</th>
+                        <th>Množství</th>
+                        <th>Prům. cena</th>
+                        <th>Celkem vloženo</th>
+                        <th>Akce</th>
+                    </tr>
+                </thead>
+                <tbody id="portfolioBody"></tbody>
+            </table>
         </div>
+        <div style="margin-top:20px; font-weight:800; font-size:1.2rem;">
+            Celková hodnota vkladů: <span id="portfolioTotalValue">0</span>
+        </div>
+    </div>
+
+    <div id="page-history" class="page card">
+        <h2>Historický vývoj trhu (S&P 500)</h2>
+        <p>Interaktivní graf pro backtesting. Můžete zoomovat a měnit časová období (např. 1995-2024).</p>
+        <div id="tradingview_widget" style="height: 500px;"></div>
     </div>
 </div>
 
 <script>
-    let myChart;
+    let chart;
+    let portfolio = JSON.parse(localStorage.getItem('myInvestments')) || [];
 
-    function formatCurrency(val) {
-        const curr = document.getElementById('currency').value;
-        return val.toLocaleString('cs-CZ') + ' ' + curr;
+    // --- NAVIGACE ---
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav a').forEach(a => a.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        document.getElementById('link-' + pageId).classList.add('active');
+
+        if(pageId === 'history') loadTradingView();
+        if(pageId === 'portfolio') renderPortfolio();
     }
 
+    // --- KALKULAČKA ---
     function calculate() {
-        const currency = document.getElementById('currency').value;
+        const curr = document.getElementById('currency').value;
         const initial = parseFloat(document.getElementById('initialDeposit').value) || 0;
         let monthly = parseFloat(document.getElementById('monthlyStep').value) || 0;
-        const years = parseInt(document.getElementById('years').value) || 0;
-        const rate = (parseFloat(document.getElementById('interestRate').value) / 100) || 0;
+        const years = parseInt(document.getElementById('years').value) || 1;
+        const rate = (parseFloat(document.getElementById('rate').value) / 100) || 0;
         const inflation = (parseFloat(document.getElementById('inflation').value) / 100) || 0;
         const compoundFreq = parseInt(document.getElementById('compounding').value);
-        const incYears = parseInt(document.getElementById('increaseYears').value) || 0;
-        const incAmount = parseFloat(document.getElementById('increaseAmount').value) || 0;
+        const incY = parseInt(document.getElementById('incYears').value) || 0;
+        const incA = parseFloat(document.getElementById('incAmount').value) || 0;
 
         let total = initial;
-        let totalDeposits = initial;
-        let labels = [0];
-        let dataTotal = [initial];
-        let dataDeposits = [initial];
+        let totalDeps = initial;
+        let labels = [0], dataT = [initial], dataD = [initial];
 
         for (let m = 1; m <= years * 12; m++) {
-            // Step-up logika
-            if (incYears > 0 && m > 1 && (m - 1) % (incYears * 12) === 0) {
-                monthly += incAmount;
-            }
-
+            if (incY > 0 && m > 1 && (m - 1) % (incY * 12) === 0) monthly += incA;
+            
             total += monthly;
-            totalDeposits += monthly;
+            totalDeps += monthly;
 
-            // Úročení
             if (m % (12 / compoundFreq) === 0) {
-                let periodicRate = rate / compoundFreq;
-                total += (total - (monthly / 2)) * periodicRate; 
+                total += (total - (monthly / 2)) * (rate / compoundFreq);
             }
 
             if (m % 12 === 0) {
                 labels.push(m / 12);
-                dataTotal.push(Math.round(total));
-                dataDeposits.push(Math.round(totalDeposits));
+                dataT.push(Math.round(total));
+                dataD.push(Math.round(totalDeps));
             }
         }
 
-        const realValue = total / Math.pow(1 + inflation, years);
+        const realVal = total / Math.pow(1 + inflation, years);
 
-        document.getElementById('resTotal').innerText = formatCurrency(Math.round(total));
-        document.getElementById('resDeposits').innerText = formatCurrency(Math.round(totalDeposits));
-        document.getElementById('resReal').innerText = formatCurrency(Math.round(realValue));
+        document.getElementById('resTotal').innerText = Math.round(total).toLocaleString() + ' ' + curr;
+        document.getElementById('resDeposits').innerText = Math.round(totalDeps).toLocaleString() + ' ' + curr;
+        document.getElementById('resReal').innerText = Math.round(realVal).toLocaleString() + ' ' + curr;
 
-        updateChart(labels, dataTotal, dataDeposits, currency);
+        updateChart(labels, dataT, dataD, curr);
     }
 
-    function updateChart(labels, totalData, depositData, curr) {
-        const ctx = document.getElementById('myChart').getContext('2d');
-        if (myChart) myChart.destroy();
-
-        myChart = new Chart(ctx, {
+    function updateChart(labels, dataT, dataD, curr) {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        if (chart) chart.destroy();
+        chart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
-                datasets: [{
-                    label: 'Majetek celkem',
-                    data: totalData,
-                    borderColor: '#2563eb',
-                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }, {
-                    label: 'Vložené peníze',
-                    data: depositData,
-                    borderColor: '#94a3b8',
-                    borderDash: [5, 5],
-                    fill: false
-                }]
+                datasets: [
+                    { label: 'Budoucí hodnota', data: dataT, borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.1)', fill: true, tension: 0.3 },
+                    { label: 'Vklady', data: dataD, borderColor: '#94a3b8', borderDash: [5, 5], fill: false }
+                ]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { ticks: { callback: v => v.toLocaleString() + ' ' + curr } }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString() + ' ' + curr
-                        }
-                    }
-                }
+            options: { 
+                responsive: true, maintainAspectRatio: false,
+                scales: { y: { ticks: { callback: v => v.toLocaleString() + ' ' + curr } } }
             }
         });
     }
 
-    function exportToPDF() {
-        const element = document.getElementById('calculator-content');
-        const opt = {
-            margin: 10,
-            filename: 'moje-investicni-strategie.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        };
-        html2pdf().set(opt).from(element).save();
+    // --- PORTFOLIO ---
+    function addAsset() {
+        const ticker = document.getElementById('pTicker').value;
+        const shares = parseFloat(document.getElementById('pShares').value);
+        const price = parseFloat(document.getElementById('pPrice').value);
+        if(!ticker || !shares || !price) return;
+
+        portfolio.push({ ticker, shares, price });
+        localStorage.setItem('myInvestments', JSON.stringify(portfolio));
+        renderPortfolio();
+        document.getElementById('pTicker').value = '';
     }
 
+    function renderPortfolio() {
+        const body = document.getElementById('portfolioBody');
+        const curr = document.getElementById('currency').value;
+        body.innerHTML = '';
+        let total = 0;
+
+        portfolio.forEach((item, i) => {
+            const sum = item.shares * item.price;
+            total += sum;
+            body.innerHTML += `<tr>
+                <td><strong>${item.ticker}</strong></td>
+                <td>${item.shares}</td>
+                <td>${item.price.toLocaleString()} ${curr}</td>
+                <td>${sum.toLocaleString()} ${curr}</td>
+                <td><span class="del-btn" onclick="removeAsset(${i})">Smazat</span></td>
+            </tr>`;
+        });
+        document.getElementById('portfolioTotalValue').innerText = total.toLocaleString() + ' ' + curr;
+    }
+
+    function removeAsset(i) {
+        portfolio.splice(i, 1);
+        localStorage.setItem('myInvestments', JSON.stringify(portfolio));
+        renderPortfolio();
+    }
+
+    // --- TRADINGVIEW & PDF ---
+    function loadTradingView() {
+        new TradingView.widget({
+            "autosize": true, "symbol": "SPX", "interval": "D", "timezone": "Etc/UTC",
+            "theme": "light", "style": "2", "locale": "cs", "container_id": "tradingview_widget"
+        });
+    }
+
+    function exportPDF() {
+        const element = document.getElementById('pdf-area');
+        html2pdf().from(element).set({
+            margin: 10, filename: 'investicni-plan.pdf', html2canvas: { scale: 2 }, jsPDF: { orientation: 'landscape' }
+        }).save();
+    }
+
+    // Start
     calculate();
 </script>
-
 </body>
 </html>
